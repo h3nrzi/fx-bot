@@ -37,8 +37,8 @@ class ScalperBot:
 
     def calculate_indicators(self, df):
         # Calculate short-term and long-term EMAs
-        short_ema_period = 5  # Short-term EMA period
-        long_ema_period = 7  # Long-term EMA period
+        short_ema_period = 10  # Short-term EMA period
+        long_ema_period = 50  # Long-term EMA period
 
         df['short_ema'] = df['close'].ewm(
             span=short_ema_period, adjust=False).mean()
