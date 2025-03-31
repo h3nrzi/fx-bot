@@ -1,15 +1,10 @@
 import MetaTrader5 as mt5
 import time
 import pandas as pd
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 
 class ScalperBot:
-    def __init__(self, account_number, password, server, symbol, lot_size, tp_pips, sl_pips, check_interval, sleep_after_trade, timeframe, magic=234000):
+    def __init__(self, account_number, password, server, symbol, lot_size, tp_in_numbers, sl_in_numbers, check_interval, sleep_after_trade, timeframe):
         self.account_number = account_number
         self.password = password
         self.server = server
@@ -18,9 +13,8 @@ class ScalperBot:
         self.check_interval = check_interval
         self.sleep_after_trade = sleep_after_trade
         self.timeframe = timeframe
-        self.tp_pips = tp_pips
-        self.sl_pips = sl_pips
-        self.magic = magic
+        self.tp_in_numbers = tp_in_numbers
+        self.sl_in_numbers = sl_in_numbers
 
         if not mt5.initialize(login=self.account_number, password=self.password, server=self.server):
             raise Exception("Failed to connect to MetaTrader 5")
@@ -29,77 +23,62 @@ class ScalperBot:
         if account_info is None:
             raise Exception(
                 "Unable to fetch account info. Check login credentials.")
-
-        logger.info(f"Connected to account: {account_info.login}")
+        print(f"Connected to account: {account_info.login}")
 
     def fetch_data(self, num_bars=100):
         rates = mt5.copy_rates_from_pos(
-            self.symbol,
-            self.timeframe,
-            0,
-            num_bars
-        )
-
-        if rates is None or len(rates) < 3:
-            logger.error(
-                f"Failed to fetch data for {self.symbol}: {mt5.last_error()}"
-            )
-            return None
-
+            self.symbol, self.timeframe, 0, num_bars)
+        if rates is None:
+            raise Exception(
+                f"Failed to fetch data for {self.symbol}: {mt5.last_error()}")
         df = pd.DataFrame(rates)
         df['time'] = pd.to_datetime(df['time'], unit='s')
         return df
 
     def calculate_indicators(self, df):
-        df['short_ema'] = df['close'].ewm(span=10, adjust=False).mean()
-        df['long_ema'] = df['close'].ewm(span=50, adjust=False).mean()
+        # Calculate short-term and long-term EMAs
+        short_ema_period = 5  # Short-term EMA period
+        long_ema_period = 7  # Long-term EMA period
+
+        df['short_ema'] = df['close'].ewm(
+            span=short_ema_period, adjust=False).mean()
+        df['long_ema'] = df['close'].ewm(
+            span=long_ema_period, adjust=False).mean()
+        df['ema_gap'] = df['short_ema'] - df['long_ema']  # Calculate EMA gap
         return df
 
     def detect_signal(self, df):
-        if df is None or len(df) < 3:
-            logger.warning("Insufficient data for signal detection.")
-            return False, False
-
+        # Logic for signal detection using EMA relationships
         last_row = df.iloc[-1]
         previous_row = df.iloc[-2]
-        second_last_row = df.iloc[-3]
 
-        short_ema = last_row['short_ema']
-        long_ema = last_row['long_ema']
-        prev_short_ema = previous_row['short_ema']
-        prev_long_ema = previous_row['long_ema']
-        second_short_ema = second_last_row['short_ema']
-        second_long_ema = second_last_row['long_ema']
+        # Detect upward trend (bullish signal)
+        if (last_row['short_ema'] > last_row['long_ema'] and
+            previous_row['short_ema'] <= previous_row['long_ema'] and
+                last_row['ema_gap'] > previous_row['ema_gap']):
+            buy_signal = True
+        else:
+            buy_signal = False
 
-        buy_signal = (prev_short_ema <= prev_long_ema and short_ema > long_ema and
-                      (short_ema - long_ema) > (prev_short_ema - prev_long_ema) and
-                      (prev_short_ema - prev_long_ema) > (second_short_ema - second_long_ema))
+        # Detect downward trend (bearish signal)
+        if (last_row['short_ema'] < last_row['long_ema'] and
+            previous_row['short_ema'] >= previous_row['long_ema'] and
+                last_row['ema_gap'] < previous_row['ema_gap']):
+            sell_signal = True
+        else:
+            sell_signal = False
 
-        sell_signal = (prev_short_ema >= prev_long_ema and short_ema < long_ema and
-                       (long_ema - short_ema) > (prev_long_ema - prev_short_ema) and
-                       (prev_long_ema - prev_short_ema) > (second_long_ema - second_short_ema))
-
+        # Return buy and sell signals
         return buy_signal, sell_signal
 
     def place_order(self, action):
         symbol_info = mt5.symbol_info(self.symbol)
         if symbol_info is None:
-            logger.error(f"Symbol {self.symbol} not found.")
+            print(f"Symbol {self.symbol} not found.")
             return None
 
-        tick = mt5.symbol_info_tick(self.symbol)
-        if tick is None:
-            logger.error(
-                f"Failed to get tick data for {self.symbol}: {mt5.last_error()}")
-            return None
-
-        price = tick.ask if action == 'buy' else tick.bid
-        point = symbol_info.point
-        tp_price = price + self.tp_pips * \
-            point if action == 'buy' else price - self.tp_pips * point
-        sl_price = price - self.sl_pips * \
-            point if action == 'buy' else price + self.sl_pips * point
-
+        price = mt5.symbol_info_tick(
+            self.symbol).ask if action == 'buy' else mt5.symbol_info_tick(self.symbol).bid
         order_type = mt5.ORDER_TYPE_BUY if action == 'buy' else mt5.ORDER_TYPE_SELL
 
         request = {
@@ -108,58 +87,73 @@ class ScalperBot:
             "volume": self.lot_size,
             "type": order_type,
             "price": price,
-            "sl": sl_price,  # Set SL as price level
-            "tp": tp_price,  # Set TP as price level
             "deviation": 10,
-            "magic": self.magic,
+            "magic": 234000,
             "comment": f"NewStrategy {action.capitalize()}",
             "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_FOK
+            "type_filling": mt5.ORDER_FILLING_IOC
         }
 
         result = mt5.order_send(request)
         if result and result.retcode == mt5.TRADE_RETCODE_DONE:
-            logger.info(
+            print(
                 f"{action.capitalize()} order placed successfully: Ticket #{result.order}")
             return result.order
         else:
-            logger.error(
-                f"Failed to place {action} order. Retcode: {result.retcode if result else 'Unknown'}")
+            print(
+                f"Failed to place {action} order. Retcode: {result.retcode}" if result else "Order send failed.")
             return None
 
     def monitor_position(self):
-        logger.info("Monitoring open position...")
-        timeout = time.time() + 3600  # 1-hour timeout to prevent infinite loop
-        while time.time() < timeout:
+        print("Monitoring open position...")
+        while True:
             positions = mt5.positions_get(symbol=self.symbol)
             if not positions:
-                logger.info("No open position found. Exiting monitoring.")
+                print("No open position found. Exiting monitoring.")
                 return
 
             position = positions[0]
             profit = position.profit
             ticket = position.ticket
-            logger.info(f"Current Profit for Ticket #{ticket}: {profit}")
+            position_type = position.type  # 0 for BUY, 1 for SELL
+            print(f"Current Profit: {profit}")
 
-            # TP/SL handled by MT5 server-side, so just monitor if position is still open
+            if profit >= self.tp_in_numbers or profit <= -self.sl_in_numbers:
+                print(
+                    f"Closing position due to profit/loss threshold: {profit}")
+                request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "position": ticket,
+                    "symbol": self.symbol,
+                    "volume": position.volume,
+                    "type": mt5.ORDER_TYPE_SELL if position_type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY,
+                    "price": mt5.symbol_info_tick(self.symbol).bid if position_type == mt5.ORDER_TYPE_BUY else mt5.symbol_info_tick(self.symbol).ask,
+                    "deviation": 10,
+                    "magic": 234000,
+                    "comment": "Threshold Close",
+                    "type_time": mt5.ORDER_TIME_GTC,
+                    "type_filling": mt5.ORDER_FILLING_IOC
+                }
+                result = mt5.order_send(request)
+                if result and result.retcode == mt5.TRADE_RETCODE_DONE:
+                    print(f"Position closed successfully: Ticket #{ticket}")
+                    time.sleep(self.sleep_after_trade)
+                    return
+                else:
+                    print(
+                        f"Failed to close position. Retcode: {result.retcode}" if result else "Order send failed.")
             time.sleep(5)
 
-        logger.warning("Monitoring timed out after 1 hour.")
-
     def run(self):
-        logger.info("Starting Scalper bot with EMA crossover strategy...")
+        print("Starting Scalper bot with placeholder strategy...")
         while True:
             positions = mt5.positions_get(symbol=self.symbol)
             if positions:
-                logger.info("Monitoring existing position...")
+                print("Monitoring existing position...")
                 self.monitor_position()
                 continue
 
             df = self.fetch_data()
-            if df is None:
-                time.sleep(self.check_interval)
-                continue
-
             df = self.calculate_indicators(df)
             buy_signal, sell_signal = self.detect_signal(df)
 
@@ -172,24 +166,22 @@ class ScalperBot:
                 if ticket:
                     self.monitor_position()
             else:
-                logger.info(
-                    "No signal detected. Checking again after interval.")
+                print("No signal detected. Checking again after interval.")
                 time.sleep(self.check_interval)
 
 
-# Create and run the bot
+# Instantiate and run
 bot = ScalperBot(
     account_number=52336957,
     password="G4SurPf8@",
     server="Alpari-MT5-Demo",
     symbol="EURUSD_i",
-    lot_size=0.01,
-    tp_pips=10,  # 1 pips for EURUSD = 10 points
-    sl_pips=10,
-    check_interval=30,
+    lot_size=0.1,
+    check_interval=5,
     sleep_after_trade=60,
     timeframe=mt5.TIMEFRAME_M1,
-    magic=234000
+    tp_in_numbers=5,
+    sl_in_numbers=5
 )
 
 bot.run()

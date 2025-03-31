@@ -1,0 +1,4 @@
+account_number=52336957,
+password="G4SurPf8@",
+server="Alpari-MT5-Demo",
+symbol="EURUSD_i",
