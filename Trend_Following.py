@@ -132,7 +132,7 @@ class ScalperBot:
                     "magic": 234000,
                     "comment": "Threshold Close",
                     "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": mt5.ORDER_FILLING_IOC
+                    "type_filling": mt5.ORDER_FILLING_FOC
                 }
                 result = mt5.order_send(request)
                 if result and result.retcode == mt5.TRADE_RETCODE_DONE:
