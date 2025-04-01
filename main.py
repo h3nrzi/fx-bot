@@ -9,7 +9,7 @@ import MetaTrader5 as mt5
 
 
 class TradingBot:
-    def __init__(self, backtest=False, start_date=None, end_date=None):
+    def __init__(self, backtest, start_date, end_date):
         # Load configuration settings
         self.config = Config()
 
@@ -123,12 +123,15 @@ class TradingBot:
 
 if __name__ == "__main__":
     # Live trading
-    # bot = TradingBot()
-    # bot.run()
+    bot = TradingBot(
+        backtest=False,
+        start_date=None,
+        end_date=None)
 
     # Backtesting
-    bot = TradingBot(
-        backtest=True,
-        start_date="2024-01-01",
-        end_date="2024-12-01")
+    # bot = TradingBot(
+    #     backtest=True,
+    #     start_date="2024-01-01",
+    #     end_date="2024-12-01")
+
     bot.run()
