@@ -8,8 +8,8 @@ import MetaTrader5 as mt5
 
 
 class TradingBot:
-    def __init__(self, strategy_instance):
-        self.config = Config()
+    def __init__(self, strategy_instance, config=None):
+        self.config = config or Config()
         self.strategy = strategy_instance
         self._initialize_connection()
         self._initialize_market_data()
@@ -35,17 +35,6 @@ class TradingBot:
             self.config.TP_PIPS,
             self.config.SL_PIPS
         )
-
-    @staticmethod
-    def load_strategy(strategy_name):
-        try:
-            module = importlib.import_module(
-                f"strategies.{strategy_name.lower()}")
-            strategy_class = getattr(module, strategy_name)
-            return strategy_class
-        except (ModuleNotFoundError, AttributeError) as e:
-            print(f"Error loading strategy {strategy_name}: {e}")
-            return None
 
     def run_live(self):
         # Ensure connection to the trading platform and symbol availability
@@ -98,14 +87,13 @@ class TradingBot:
 
 
 if __name__ == "__main__":
-    # Load strategy dynamically
-    strategy_class = TradingBot.load_strategy(Config.STRATEGY)
-    if strategy_class:
-        strategy_instance = strategy_class(
-            symbol=Config.SYMBOL,
-            timeframe=Config.get_timeframe()
-        )
-        bot = TradingBot(strategy_instance)
-        bot.run()
-    else:
-        print("Failed to load strategy. Exiting.")
+    # Import the desired strategy
+    from strategies.ema_crossover import EMACrossoverStrategy
+
+    # Inject the strategy instance
+    strategy_instance = EMACrossoverStrategy(
+        symbol=Config.SYMBOL,
+        timeframe=Config.get_timeframe()
+    )
+    bot = TradingBot(strategy_instance)
+    bot.run()
