@@ -1,7 +1,9 @@
+from dotenv import load_dotenv
 import os
 
 
 class Config:
+    load_dotenv()
     ACCOUNT_NUMBER = int(os.getenv("ACCOUNT_NUMBER"))
     PASSWORD = os.getenv("PASSWORD")
     SERVER = os.getenv("SERVER")
