@@ -8,8 +8,15 @@ class MT5Connection:
         self.server = server
         self.connected = False
 
+    def _initialize_connection(self):
+        return mt5.initialize(
+            login=self.account_number,
+            password=self.password,
+            server=self.server
+        )
+
     def connect(self):
-        if not mt5.initialize(login=self.account_number, password=self.password, server=self.server):
+        if not self._initialize_connection():
             print("Failed to connect to MT5.")
             return False
         self.connected = True

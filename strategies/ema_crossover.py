@@ -8,11 +8,12 @@ class EMACrossoverStrategy(TradingStrategy):
         self.short_ema_period = short_ema_period
         self.long_ema_period = long_ema_period
 
+    def _calculate_ema(self, df, period, column_name):
+        df[column_name] = df['close'].ewm(span=period, adjust=False).mean()
+
     def calculate_indicators(self, df):
-        df['short_ema'] = df['close'].ewm(
-            span=self.short_ema_period, adjust=False).mean()
-        df['long_ema'] = df['close'].ewm(
-            span=self.long_ema_period, adjust=False).mean()
+        self._calculate_ema(df, self.short_ema_period, 'short_ema')
+        self._calculate_ema(df, self.long_ema_period, 'long_ema')
         df['ema_gap'] = df['short_ema'] - df['long_ema']
         return df
 
@@ -30,3 +31,6 @@ class EMACrossoverStrategy(TradingStrategy):
                        last_row['ema_gap'] < prev_row['ema_gap'])
 
         return buy_signal, sell_signal
+
+    def get_name(self):
+        return "EMACrossoverStrategy"

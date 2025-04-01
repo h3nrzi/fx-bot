@@ -1,48 +1,59 @@
 import time
+import importlib
 from config.config import Config
 from core.connection import MT5Connection
 from core.data import MarketData
 from core.order import OrderManager
-from strategies.ema_crossover import EMACrossoverStrategy
 import MetaTrader5 as mt5
 
 
 class TradingBot:
-    def __init__(self):
-        # Load configuration settings
+    def __init__(self, strategy_instance):
         self.config = Config()
+        self.strategy = strategy_instance
+        self._initialize_connection()
+        self._initialize_market_data()
+        self._initialize_order_manager()
 
-        # Initialize connection to the trading platform
+    def _initialize_connection(self):
         self.connection = MT5Connection(
             self.config.ACCOUNT_NUMBER,
             self.config.PASSWORD,
-            self.config.SERVER)
+            self.config.SERVER
+        )
 
-        # Initialize market data handler
+    def _initialize_market_data(self):
         self.data = MarketData(
             self.config.SYMBOL,
-            self.config.get_timeframe())
+            self.config.get_timeframe()
+        )
 
-        # Initialize order manager for placing and managing trades
+    def _initialize_order_manager(self):
         self.order_manager = OrderManager(
             self.config.SYMBOL,
             self.config.LOT_SIZE,
             self.config.TP_PIPS,
-            self.config.SL_PIPS)
+            self.config.SL_PIPS
+        )
 
-        # Initialize the trading strategy
-        self.strategy = EMACrossoverStrategy(
-            self.config.SYMBOL,
-            self.config.get_timeframe())
-
-    ####################################################################################
+    @staticmethod
+    def load_strategy(strategy_name):
+        try:
+            module = importlib.import_module(
+                f"strategies.{strategy_name.lower()}")
+            strategy_class = getattr(module, strategy_name)
+            return strategy_class
+        except (ModuleNotFoundError, AttributeError) as e:
+            print(f"Error loading strategy {strategy_name}: {e}")
+            return None
 
     def run_live(self):
         # Ensure connection to the trading platform and symbol availability
         if not self.connection.connect() or not self.connection.ensure_symbol(self.config.SYMBOL):
             return
 
-        print("Trading bot started...")
+        print(
+            f"Trading bot started using strategy: {self.strategy.get_name()}")
 
         try:
             while True:
@@ -82,13 +93,19 @@ class TradingBot:
         finally:
             self.connection.disconnect()
 
-    ####################################################################################
-
     def run(self):
         self.run_live()
 
 
 if __name__ == "__main__":
-    # Live trading
-    bot = TradingBot()
-    bot.run()
+    # Load strategy dynamically
+    strategy_class = TradingBot.load_strategy(Config.STRATEGY)
+    if strategy_class:
+        strategy_instance = strategy_class(
+            symbol=Config.SYMBOL,
+            timeframe=Config.get_timeframe()
+        )
+        bot = TradingBot(strategy_instance)
+        bot.run()
+    else:
+        print("Failed to load strategy. Exiting.")

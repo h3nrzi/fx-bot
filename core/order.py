@@ -8,10 +8,16 @@ class OrderManager:
         self.tp_pips = tp_pips
         self.sl_pips = sl_pips
 
-    def place_order(self, action):
+    def _validate_symbol(self):
         symbol_info = mt5.symbol_info(self.symbol)
         if symbol_info is None:
             print(f"Symbol {self.symbol} not found.")
+            return None
+        return symbol_info
+
+    def place_order(self, action):
+        symbol_info = self._validate_symbol()
+        if not symbol_info:
             return None
 
         tick = mt5.symbol_info_tick(self.symbol)

@@ -9,6 +9,7 @@ class Config:
     SL_PIPS = 5      # Stop Loss in pips
     CHECK_INTERVAL = 30  # Seconds between checks
     SLEEP_AFTER_TRADE = 60  # Seconds to wait after a trade
+    STRATEGY = "EMACrossoverStrategy"  # Default strategy
 
     # Convert MT5 timeframe string to MT5 constant
     TIMEFRAMES = {
