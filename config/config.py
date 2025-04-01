@@ -5,9 +5,9 @@ class Config:
     SYMBOL = "EURUSD_i"
     LOT_SIZE = 0.01
     TIMEFRAME = "M1"  # MT5 TIMEFRAME_M1
-    TP_PIPS = 50      # Take Profit in pips
-    SL_PIPS = 50      # Stop Loss in pips
-    CHECK_INTERVAL = 5  # Seconds between checks
+    TP_PIPS = 5      # Take Profit in pips
+    SL_PIPS = 5      # Stop Loss in pips
+    CHECK_INTERVAL = 30  # Seconds between checks
     SLEEP_AFTER_TRADE = 60  # Seconds to wait after a trade
 
     # Convert MT5 timeframe string to MT5 constant
