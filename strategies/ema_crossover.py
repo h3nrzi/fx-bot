@@ -1,5 +1,5 @@
 from core.strategy import TradingStrategy
-import pandas as pd
+from core.indicators import IndicatorUtils
 
 
 class EMACrossoverStrategy(TradingStrategy):
@@ -8,12 +8,18 @@ class EMACrossoverStrategy(TradingStrategy):
         self.short_ema_period = short_ema_period
         self.long_ema_period = long_ema_period
 
-    def _calculate_ema(self, df, period, column_name):
-        df[column_name] = df['close'].ewm(span=period, adjust=False).mean()
-
     def calculate_indicators(self, df):
-        self._calculate_ema(df, self.short_ema_period, 'short_ema')
-        self._calculate_ema(df, self.long_ema_period, 'long_ema')
+        df = IndicatorUtils.calculate_ema(
+            df=df,
+            period=self.short_ema_period,
+            column_name='short_ema'
+        )
+        df = IndicatorUtils.calculate_ema(
+            df=df,
+            period=self.long_ema_period,
+            column_name='long_ema'
+        )
+
         df['ema_gap'] = df['short_ema'] - df['long_ema']
         return df
 
