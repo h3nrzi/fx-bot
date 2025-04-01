@@ -3,13 +3,12 @@ from config.config import Config
 from core.connection import MT5Connection
 from core.data import MarketData
 from core.order import OrderManager
-from core.backtest import Backtester
 from strategies.ema_crossover import EMACrossoverStrategy
 import MetaTrader5 as mt5
 
 
 class TradingBot:
-    def __init__(self, backtest, start_date, end_date):
+    def __init__(self):
         # Load configuration settings
         self.config = Config()
 
@@ -35,35 +34,6 @@ class TradingBot:
         self.strategy = EMACrossoverStrategy(
             self.config.SYMBOL,
             self.config.get_timeframe())
-
-        # Set backtesting parameters
-        self.backtest = backtest
-        self.start_date = start_date
-        self.end_date = end_date
-
-    ####################################################################################
-
-    def run_backtest(self):
-        # Establish a connection to the trading platform
-        if not self.connection.connect():
-            return
-
-        # Initialize the backtester with the strategy and configuration parameters
-        backtester = Backtester(
-            self.strategy,
-            self.config.SYMBOL,
-            self.config.get_timeframe(),
-            self.config.LOT_SIZE,
-            self.config.TP_PIPS,
-            self.config.SL_PIPS,
-            self.start_date,
-            self.end_date)
-
-        # Run the backtesting process
-        backtester.run()
-
-        # Disconnect from the trading platform after backtesting
-        self.connection.disconnect()
 
     ####################################################################################
 
@@ -115,23 +85,10 @@ class TradingBot:
     ####################################################################################
 
     def run(self):
-        if self.backtest:
-            self.run_backtest()
-        else:
-            self.run_live()
+        self.run_live()
 
 
 if __name__ == "__main__":
     # Live trading
-    bot = TradingBot(
-        backtest=False,
-        start_date=None,
-        end_date=None)
-
-    # Backtesting
-    # bot = TradingBot(
-    #     backtest=True,
-    #     start_date="2024-01-01",
-    #     end_date="2024-12-01")
-
+    bot = TradingBot()
     bot.run()
