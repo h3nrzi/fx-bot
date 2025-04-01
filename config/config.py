@@ -1,5 +1,5 @@
 class Config:
-    ACCOUNT_NUMBER = 52336957
+    ACCOUNT_NUMBER = 52339321
     PASSWORD = "G4SurPf8@"
     SERVER = "Alpari-MT5-Demo"
     SYMBOL = "EURUSD_i"

@@ -1,16 +1,16 @@
 import time
-import importlib
 from config.config import Config
 from core.connection import MT5Connection
 from core.data import MarketData
 from core.order import OrderManager
 import MetaTrader5 as mt5
+from strategies.ema_crossover import EMACrossoverStrategy
 
 
 class TradingBot:
-    def __init__(self, strategy_instance, config=None):
-        self.config = config or Config()
-        self.strategy = strategy_instance
+    def __init__(self, strategy, config):
+        self.config = config
+        self.strategy = strategy
         self._initialize_connection()
         self._initialize_market_data()
         self._initialize_order_manager()
@@ -36,7 +36,7 @@ class TradingBot:
             self.config.SL_PIPS
         )
 
-    def run_live(self):
+    def run(self):
         # Ensure connection to the trading platform and symbol availability
         if not self.connection.connect() or not self.connection.ensure_symbol(self.config.SYMBOL):
             return
@@ -82,18 +82,18 @@ class TradingBot:
         finally:
             self.connection.disconnect()
 
-    def run(self):
-        self.run_live()
-
 
 if __name__ == "__main__":
-    # Import the desired strategy
-    from strategies.ema_crossover import EMACrossoverStrategy
+    config_instance = Config()
 
-    # Inject the strategy instance
     strategy_instance = EMACrossoverStrategy(
         symbol=Config.SYMBOL,
         timeframe=Config.get_timeframe()
     )
-    bot = TradingBot(strategy_instance)
+
+    bot = TradingBot(
+        config=config_instance,
+        strategy=strategy_instance
+    )
+
     bot.run()
