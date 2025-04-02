@@ -9,11 +9,11 @@ class Config:
     SERVER = os.getenv("SERVER")
     SYMBOL = "EURUSD_i"
     LOT_SIZE = 0.01
-    TIMEFRAME = "M15"
-    TP_PIPS = 30
-    SL_PIPS = 10
-    CHECK_INTERVAL = 15
-    SLEEP_AFTER_TRADE = 15
+    TIMEFRAME = "M1"
+    TP_PIPS = 5
+    SL_PIPS = 5
+    CHECK_INTERVAL = 30
+    SLEEP_AFTER_TRADE = 30
 
     # Convert MT5 timeframe string to MT5 constant
     TIMEFRAMES = {

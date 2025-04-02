@@ -3,7 +3,7 @@ from core.indicators import IndicatorUtils
 
 
 class ScalpingEMAStrategy(TradingStrategy):
-    def __init__(self, symbol, timeframe, short_ema_period, long_ema_period, rsi_period, adx_period, adx_threshold):
+    def __init__(self, symbol, timeframe, short_ema_period=10, long_ema_period=50, rsi_period=14, adx_period=14, adx_threshold=25):
         super().__init__(symbol, timeframe)
         self.short_ema_period = short_ema_period
         self.long_ema_period = long_ema_period
