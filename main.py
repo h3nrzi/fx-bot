@@ -110,12 +110,14 @@ if __name__ == "__main__":
 
     strategy_instance = EMACrossoverStrategy(
         symbol=Config.SYMBOL,
-        timeframe=Config.get_timeframe()
+        timeframe=Config.get_timeframe(),
+        short_ema_period=20,
+        long_ema_period=100
     )
 
     bot = TradingBot(
         config=config_instance,
-        strategy=strategy_instance
+        strategy=strategy_instance,
     )
 
     bot.run()
