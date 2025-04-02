@@ -53,13 +53,13 @@ class TradingBot:
                     self.no_signal_counter = 1
                     for position in positions:
                         print(
-                            "************************\n"
                             f"Position Details:\n"
                             f"  Ticket: {position.ticket}\n"
                             f"  Type: {'Buy' if position.type == 0 else 'Sell'}\n"
                             f"  Volume: {position.volume}\n"
                             f"  Open Price: {position.price_open}\n"
                             f"  Profit: {position.profit}\n"
+                            "************************\n"
                         )
                     time.sleep(self.config.CHECK_INTERVAL)
                     continue
@@ -84,7 +84,6 @@ class TradingBot:
                 # If no signal is detected, wait for the next interval
                 else:
                     print(
-                        "************************ "
                         f"No signal detected - "
                         f"Market Info: {self.no_signal_counter}\n"
                         f"  Symbol: {self.config.SYMBOL}\n"
@@ -92,6 +91,7 @@ class TradingBot:
                         f"  Time: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
                         f"  Price: {self.data.get_current_price()}\n"
                         f"  Spread: {self.data.get_spread()}\n"
+                        "************************ "
                     )
                     self.no_signal_counter += 1
                     time.sleep(self.config.CHECK_INTERVAL)
