@@ -91,7 +91,7 @@ class TradingBot:
                         f"  Time: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
                         f"  Price: {self.data.get_current_price()}\n"
                         f"  Spread: {self.data.get_spread()}\n"
-                        "************************ "
+                        "************************************************************************"
                     )
                     self.no_signal_counter += 1
                     time.sleep(self.config.CHECK_INTERVAL)

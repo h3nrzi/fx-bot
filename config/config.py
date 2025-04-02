@@ -8,12 +8,12 @@ class Config:
     PASSWORD = os.getenv("PASSWORD")
     SERVER = os.getenv("SERVER")
     SYMBOL = "EURUSD_i"
-    LOT_SIZE = 0.05
+    LOT_SIZE = 0.01
     TIMEFRAME = "M1"
-    TP_PIPS = 4
-    SL_PIPS = 2
-    CHECK_INTERVAL = 5
-    SLEEP_AFTER_TRADE = 5
+    TP_PIPS = 5
+    SL_PIPS = 5
+    CHECK_INTERVAL = 15
+    SLEEP_AFTER_TRADE = 15
 
     # Convert MT5 timeframe string to MT5 constant
     TIMEFRAMES = {
