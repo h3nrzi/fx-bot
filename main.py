@@ -4,7 +4,7 @@ from core.connection import MT5Connection
 from core.data import MarketData
 from core.order import OrderManager
 import MetaTrader5 as mt5
-from strategies.ema_crossover import EMACrossoverStrategy
+from strategies.scalping_ema_crossover import ScalpingEMAStrategy
 
 
 class TradingBot:
@@ -108,11 +108,12 @@ class TradingBot:
 if __name__ == "__main__":
     config_instance = Config()
 
-    strategy_instance = EMACrossoverStrategy(
+    strategy_instance = ScalpingEMAStrategy(
         symbol=Config.SYMBOL,
         timeframe=Config.get_timeframe(),
-        short_ema_period=20,
-        long_ema_period=100
+        short_ema_period=5,
+        long_ema_period=13,
+        rsi_period=14
     )
 
     bot = TradingBot(
