@@ -10,8 +10,8 @@ class Config:
     SYMBOL = "EURUSD_i"
     LOT_SIZE = 0.01
     TIMEFRAME = "M15"
-    TP_PIPS = 15
-    SL_PIPS = 5
+    TP_PIPS = 30
+    SL_PIPS = 10
     CHECK_INTERVAL = 15
     SLEEP_AFTER_TRADE = 15
 
