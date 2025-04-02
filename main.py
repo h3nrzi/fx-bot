@@ -14,6 +14,7 @@ class TradingBot:
         self._initialize_connection()
         self._initialize_market_data()
         self._initialize_order_manager()
+        self.no_signal_counter = 1
 
     def _initialize_connection(self):
         self.connection = MT5Connection(
@@ -47,8 +48,19 @@ class TradingBot:
         try:
             while True:
                 # Check if there is already an open position for the symbol
-                if mt5.positions_get(symbol=self.config.SYMBOL):
-                    print("Position already open. Skipping.")
+                positions = mt5.positions_get(symbol=self.config.SYMBOL)
+                if positions:
+                    self.no_signal_counter = 1
+                    for position in positions:
+                        print(
+                            "************************\n"
+                            f"Position Details:\n"
+                            f"  Ticket: {position.ticket}\n"
+                            f"  Type: {'Buy' if position.type == 0 else 'Sell'}\n"
+                            f"  Volume: {position.volume}\n"
+                            f"  Open Price: {position.price_open}\n"
+                            f"  Profit: {position.profit}\n"
+                        )
                     time.sleep(self.config.CHECK_INTERVAL)
                     continue
 
@@ -71,7 +83,17 @@ class TradingBot:
                     time.sleep(self.config.SLEEP_AFTER_TRADE)
                 # If no signal is detected, wait for the next interval
                 else:
-                    print("No signal detected.")
+                    print(
+                        "************************ "
+                        f"No signal detected - "
+                        f"Market Info: {self.no_signal_counter}\n"
+                        f"  Symbol: {self.config.SYMBOL}\n"
+                        f"  Timeframe: {self.config.get_timeframe()}\n"
+                        f"  Time: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+                        f"  Price: {self.data.get_current_price()}\n"
+                        f"  Spread: {self.data.get_spread()}\n"
+                    )
+                    self.no_signal_counter += 1
                     time.sleep(self.config.CHECK_INTERVAL)
 
         # Handle user interruption gracefully

@@ -26,3 +26,18 @@ class MarketData:
             self._handle_fetch_error("Failed to get tick data")
             return None
         return tick
+
+    def get_spread(self):
+        """Calculate the spread as the difference between the ask and bid prices."""
+        rates = mt5.symbol_info_tick(self.symbol)
+        if rates is None:
+            print(f"Failed to retrieve tick data for symbol: {self.symbol}")
+            return None
+        return rates.ask - rates.bid
+
+    def get_current_price(self):
+        """Retrieve the current bid and ask prices for the symbol."""
+        tick = self.get_tick()
+        if tick is None:
+            return None
+        return {"bid": tick.bid, "ask": tick.ask}
