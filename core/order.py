@@ -75,7 +75,7 @@ class OrderManager:
             "price": price,  # Execution price
             "sl": sl_price,  # Stop loss price
             "tp": tp_price,  # Take profit price
-            "deviation": 10,  # Maximum price deviation allowed (in points)
+            "deviation": 50,  # Maximum price deviation allowed (in points)
             "magic": 123456,  # Magic number to identify the order
             "comment": f"{action.capitalize()} Order",  # Order comment
             # Order time type (Good Till Canceled)
