@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 class IndicatorUtils:
@@ -21,7 +22,7 @@ class IndicatorUtils:
         delta = df['close'].diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-        rs = gain / loss.replace(0, 1)  # جلوگیری از تقسیم بر صفر
+        rs = gain / loss.replace(0, 1)
         df[column_name] = 100 - (100 / (1 + rs)).fillna(0)
         return df
 
@@ -37,30 +38,31 @@ class IndicatorUtils:
         return df
 
     @staticmethod
-    def calculate_adx(df, period=14, column_name="adx"):
-        """Calculate Average Directional Index (ADX) to measure trend strength."""
-        df['high-low'] = df['high'] - df['low']
-        df['high-close'] = (df['high'] - df['close'].shift()).abs()
-        df['low-close'] = (df['low'] - df['close'].shift()).abs()
+    def calculate_adx(df, period=14, column_name='adx'):
+        """Calculate the Average Directional Index (ADX) for a given period."""
+        # Calculate True Range (TR)
+        high_low = df['high'] - df['low']
+        high_close = np.abs(df['high'] - df['close'].shift(1))
+        low_close = np.abs(df['low'] - df['close'].shift(1))
+        tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
 
-        df['tr'] = df[['high-low', 'high-close', 'low-close']].max(axis=1)
-        df['tr_smooth'] = df['tr'].rolling(window=period).mean()
+        # Calculate Positive and Negative Directional Movement (DM)
+        plus_dm = df['high'].diff()
+        minus_dm = -df['low'].diff()
+        plus_dm[plus_dm < 0] = 0
+        minus_dm[minus_dm < 0] = 0
 
-        df['plus_dm'] = df['high'].diff()
-        df['minus_dm'] = df['low'].diff()
+        # Smooth True Range and Directional Movement using Exponential Moving Average
+        tr_smooth = tr.ewm(span=period, adjust=False).mean()
+        plus_dm_smooth = plus_dm.ewm(span=period, adjust=False).mean()
+        minus_dm_smooth = minus_dm.ewm(span=period, adjust=False).mean()
 
-        df['plus_dm'] = df['plus_dm'].where(
-            (df['plus_dm'] > df['minus_dm']) & (df['plus_dm'] > 0), 0)
-        df['minus_dm'] = df['minus_dm'].where(
-            (df['minus_dm'] > df['plus_dm']) & (df['minus_dm'] > 0), 0)
+        # Calculate Positive and Negative Directional Index (DI)
+        plus_di = 100 * (plus_dm_smooth / tr_smooth)
+        minus_di = 100 * (minus_dm_smooth / tr_smooth)
 
-        df['plus_di'] = 100 * \
-            (df['plus_dm'].rolling(window=period).mean() / df['tr_smooth']).fillna(0)
-        df['minus_di'] = 100 * \
-            (df['minus_dm'].rolling(window=period).mean() /
-             df['tr_smooth']).fillna(0)
+        # Calculate Directional Index (DX) and Average Directional Index (ADX)
+        dx = 100 * np.abs(plus_di - minus_di) / (plus_di + minus_di)
+        df[column_name] = dx.ewm(span=period, adjust=False).mean()
 
-        df[column_name] = 100 * abs(df['plus_di'] - df['minus_di']) / \
-            (df['plus_di'] + df['minus_di']).replace(0, 1)
-
-        return df.drop(columns=['high-low', 'high-close', 'low-close', 'tr', 'tr_smooth', 'plus_dm', 'minus_dm', 'plus_di', 'minus_di'])
+        return df

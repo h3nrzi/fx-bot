@@ -111,9 +111,11 @@ if __name__ == "__main__":
     strategy_instance = ScalpingEMAStrategy(
         symbol=Config.SYMBOL,
         timeframe=Config.get_timeframe(),
-        short_ema_period=5,
-        long_ema_period=13,
-        rsi_period=14
+        short_ema_period=10,
+        long_ema_period=50,
+        rsi_period=14,
+        adx_period=14,
+        adx_threshold=25
     )
 
     bot = TradingBot(
