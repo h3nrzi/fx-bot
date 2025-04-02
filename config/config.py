@@ -8,10 +8,10 @@ class Config:
     PASSWORD = os.getenv("PASSWORD")
     SERVER = os.getenv("SERVER")
     SYMBOL = "EURUSD_i"
-    LOT_SIZE = 0.01
+    LOT_SIZE = 0.05
     TIMEFRAME = "M1"
-    TP_PIPS = 10
-    SL_PIPS = 5
+    TP_PIPS = 4
+    SL_PIPS = 2
     CHECK_INTERVAL = 5
     SLEEP_AFTER_TRADE = 5
 

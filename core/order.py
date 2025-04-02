@@ -52,7 +52,7 @@ class OrderManager:
             "price": price,
             "sl": sl_price,
             "tp": tp_price,
-            "deviation": 20,
+            "deviation": 50,  # Increased from 20 to 50
             "magic": 234000,
             "comment": f"{action.capitalize()} Order",
             "type_time": mt5.ORDER_TIME_GTC,
