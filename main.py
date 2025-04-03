@@ -5,6 +5,7 @@ from core.data import MarketData
 from core.order import OrderManager
 import MetaTrader5 as mt5
 from strategies.moving_average_strategy import MovingAverageStrategy
+from strategies.scalping_ema_crossover import ScalpingEMAStrategy
 from utils.notifications import TelegramNotifier
 
 
@@ -137,11 +138,21 @@ class TradingBot:
 if __name__ == "__main__":
     config_instance = Config()
 
-    strategy_instance = MovingAverageStrategy(
+    # strategy_instance = MovingAverageStrategy(
+    #     symbol=config_instance.SYMBOL,
+    #     timeframe=config_instance.get_timeframe(),
+    #     short_window=10,
+    #     long_window=50
+    # )
+
+    strategy_instance = ScalpingEMAStrategy(
         symbol=config_instance.SYMBOL,
         timeframe=config_instance.get_timeframe(),
-        short_window=10,
-        long_window=50
+        short_ema_period=5,
+        long_ema_period=13,
+        rsi_period=7,
+        adx_period=14,
+        adx_threshold=25
     )
 
     bot = TradingBot(
