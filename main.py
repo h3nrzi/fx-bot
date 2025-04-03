@@ -117,7 +117,7 @@ class TradingBot:
                         f"📢 Signal Detected!\n"
                         f"📈 Symbol: {self.config.SYMBOL}\n"
                         f"📊 Action: {action.upper()}\n"
-                        f"💵 Current Price: {self.data.get_current_price():.5f}\n"
+                        f"💵 Current Price: {self.data.get_current_price()['bid']:.5f}\n"
                         f"⏰ Time: {time.strftime('%Y-%m-%d %H:%M:%S')}"
                     )
                     print(signal_message)
