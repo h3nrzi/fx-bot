@@ -12,8 +12,8 @@ class Config:
     TIMEFRAME = "M1"
     TP_PIPS = 10
     SL_PIPS = 5
-    CHECK_INTERVAL = 30
-    SLEEP_AFTER_TRADE = 30
+    CHECK_INTERVAL = 45
+    SLEEP_AFTER_TRADE = 45
 
     # Convert MT5 timeframe string to MT5 constant
     TIMEFRAMES = {

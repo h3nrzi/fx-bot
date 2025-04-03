@@ -185,8 +185,8 @@ if __name__ == "__main__":
     strategy_instance = ScalpingEMAStrategy(
         symbol=config_instance.SYMBOL,
         timeframe=config_instance.get_timeframe(),
-        short_ema_period=5,
-        long_ema_period=13,
+        short_ema_period=10,
+        long_ema_period=50,
         rsi_period=7,
         adx_period=14,
         adx_threshold=25
