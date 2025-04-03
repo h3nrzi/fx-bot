@@ -154,13 +154,12 @@ class TradingBot:
                 else:
                     # No signal detected, notify and wait
                     no_signal_message = (
-                        f"🔍 No Signal Detected #{str(self.no_signal_counter)}\n"
-                        f"📌 Symbol: {str(self.config.SYMBOL)}\n"
-                        f"⏱️ Timeframe: {str(self.config.get_timeframe())}\n"
+                        f"🔍 No Signal Detected #{self.no_signal_counter}\n"
+                        f"📌 Symbol: {self.config.SYMBOL}\n"
+                        f"⏱️ Timeframe: {self.config.get_timeframe()}\n"
                         f"🕒 Time: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
-                        f"💵 Price: {str(self.data.get_current_price()):.5f}\n"
-                        f"📉 Spread: {str(self.data.get_spread()):.2f}\n"
-                        "-------------------"
+                        f"💵 Price: {self.data.get_current_price()['bid']:.5f}\n"
+                        f"📉 Spread: {self.data.get_spread():.5f}\n"
                     )
                     print(no_signal_message)
                     self.notifier.send_message(no_signal_message)
