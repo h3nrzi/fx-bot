@@ -17,6 +17,7 @@ class TradingBot:
         self._initialize_connection()
         self._initialize_market_data()
         self._initialize_order_manager()
+        self.no_signal_counter = 1
 
     def _initialize_connection(self):
         """Initialize the connection to the MetaTrader 5 platform"""
@@ -91,6 +92,7 @@ class TradingBot:
                 # Check for open positions
                 positions = mt5.positions_get(symbol=self.config.SYMBOL)
                 if positions:
+                    self.no_signal_counter = 1
                     for position in positions:
                         position_message = self._format_position_details(
                             position=position
@@ -152,9 +154,9 @@ class TradingBot:
                 else:
                     # No signal detected, notify and wait
                     no_signal_message = (
-                        f"🔍 No Signal Detected\n"
+                        f"🔍 No Signal Detected #{self.no_signal_counter}\n"
                         f"📌 Symbol: {self.config.SYMBOL}\n"
-                        f"⏱️ Timeframe: {self.config.get_timeframe()}\n"
+                        f"⏱️ Timeframe: {str(self.config.get_timeframe())}\n"
                         f"🕒 Time: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
                         f"💵 Price: {self.data.get_current_price():.5f}\n"
                         f"📉 Spread: {self.data.get_spread():.2f}\n"
@@ -162,6 +164,7 @@ class TradingBot:
                     )
                     print(no_signal_message)
                     self.notifier.send_message(no_signal_message)
+                    self.no_signal_counter += 1
                     time.sleep(self.config.CHECK_INTERVAL)
 
         # Handle user interruption (Ctrl+C)
