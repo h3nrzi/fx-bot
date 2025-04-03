@@ -2,7 +2,7 @@ from core.strategy import TradingStrategy
 from core.indicators import IndicatorUtils
 
 
-class ImprovedScalpingEMAStrategy(TradingStrategy):
+class ScalpingEMAStrategy(TradingStrategy):
     def __init__(self, symbol, timeframe, short_ema_period=10, long_ema_period=50, rsi_period=14, adx_period=14, adx_threshold=20):
         super().__init__(symbol, timeframe)
         self.short_ema_period = short_ema_period
